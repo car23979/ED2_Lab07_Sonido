@@ -328,7 +328,28 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Play_Tone(uint16_t frequency, uint16_t duration) {
+    if (frequency == REST) {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
+    } else {
+        // Como el timer corre a 1MHz (84MHz / 84), el ARR es 1,000,000 / frecuencia
+        uint32_t arr_value = (1000000 / frequency) - 1;
+        __HAL_TIM_SET_AUTORELOAD(&htim3, arr_value);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, arr_value / 2); // 50% Duty Cycle
+    }
+    HAL_Delay(duration);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0); // Silencio breve entre notas
+    HAL_Delay(25);
+}
 
+void Play_Song(Note song[]) {
+    int i = 0;
+    while (song[i].duration_ms != 0) {
+        Play_Tone(song[i].frequency, song[i].duration_ms);
+        i++;
+    }
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0); // Apagar al finalizar
+}
 /* USER CODE END 4 */
 
 /**
