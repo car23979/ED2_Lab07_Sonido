@@ -62,6 +62,12 @@ UART_HandleTypeDef huart2;
 #define NOTE_D5  587
 #define NOTE_E5  659
 #define REST     0
+
+typedef struct
+{
+	uint16_t frecuency;
+	uint16_t duration_ms;
+} Note;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
