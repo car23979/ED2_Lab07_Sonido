@@ -49,44 +49,86 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-// Frecuencias de las notas
+// Frecuencias exactas en Hz
 #define NOTE_C4  262
 #define NOTE_D4  294
 #define NOTE_E4  330
 #define NOTE_F4  349
 #define NOTE_G4  392
 #define NOTE_A4  440
-#define NOTE_AS4 466
+#define NOTE_AS4 466 // Sib
 #define NOTE_B4  494
 #define NOTE_C5  523
 #define NOTE_D5  587
 #define NOTE_E5  659
+#define NOTE_F5  698
+#define NOTE_G5  784
 #define REST     0
 
-typedef struct
-{
-	uint16_t frecuency;
-	uint16_t duration_ms;
+// Definición de tiempos para controlar la velocidad (ms)
+// Para Spider-Man (Moderado)
+#define SP_S 125  // Semicorchea (Muy rápida)
+#define SP_C 250  // Corchea (Rápida)
+#define SP_N 500  // Negra (Normal)
+#define SP_B 1000 // Blanca (Lenta/Pausa)
+
+// Para Oogway (Lento/Solemne)
+#define OG_N 800   // Negra
+#define OG_C 400   // Corchea
+#define OG_B 1600  // Blanca
+
+typedef struct {
+    uint16_t frequency;
+    uint16_t duration_ms;
 } Note;
 
-// Cancion 1: Spider-Man (Tema clásico)
+// Cancion 1: Spider-Man (Ajustada al tutorial)
+// Estructura de la canción mejorada
 Note cancion_spiderman[] = {
-    {NOTE_C4, 200}, {NOTE_E4, 200}, {NOTE_G4, 400}, {NOTE_C5, 400},
-    {NOTE_AS4, 200}, {NOTE_A4, 200}, {NOTE_G4, 400}, {REST, 100},
-    {NOTE_C4, 200}, {NOTE_E4, 200}, {NOTE_G4, 400}, {NOTE_A4, 400},
-    {NOTE_G4, 400}, {REST, 200}, {REST, 0}
+    // Frase 1: MI SOL SI (Rápido al inicio)
+    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N},
+    // Frase 2: LA SOL MI MI (Ritmo picado)
+    {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_E4, SP_C}, {NOTE_E4, SP_N},
+
+    // Frase 3: MI SOL SI LA SOL MI (Semicorcheas en el medio)
+    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_C}, {NOTE_E4, SP_N},
+
+    // Frase 4: MI SOL SI (Repetición con énfasis)
+    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N},
+
+    // Frase 5: DO' SI LA SOL MI (Descenso rápido)
+    {NOTE_C5, SP_S}, {NOTE_B4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_E4, SP_B},
+
+    // Frase 6: LA DO' MI RE DO LA (Subida de energía)
+    {NOTE_A4, SP_C}, {NOTE_C5, SP_C}, {NOTE_E5, SP_N}, {NOTE_D5, SP_S}, {NOTE_C5, SP_S}, {NOTE_A4, SP_B},
+
+    // Frase 7: Final clásico
+    {NOTE_C5, SP_C}, {NOTE_B4, SP_B},
+    {NOTE_A4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_C}, {NOTE_E4, SP_B},
+
+    {REST, 0}
 };
 
-// Cancion 2: Oogway Ascends (Kung Fu Panda)
+// Cancion 2: Oogway Ascends (Ajustada al tempo solemne)
 Note cancion_oogway[] = {
-    {NOTE_G4, 800}, {NOTE_A4, 400}, {NOTE_C5, 800}, {NOTE_D5, 800},
-    {NOTE_E5, 1200}, {NOTE_D5, 400}, {NOTE_C5, 400}, {NOTE_A4, 800},
-    {NOTE_G4, 1200}, {REST, 0}
+    {NOTE_D4, OG_N}, {NOTE_F4, OG_N}, {NOTE_D5, OG_N}, {NOTE_C5, OG_N}, {NOTE_A4, OG_B}, // Re Fa Re' Do' La
+    {REST, OG_N},
+    {NOTE_G4, OG_N}, {NOTE_A4, OG_N}, {NOTE_G4, OG_N}, {NOTE_F4, OG_N}, {NOTE_D4, OG_B}, // Sol La Sol Fa Re
+    {REST, OG_N},
+    {NOTE_F4, OG_N}, {NOTE_A4, OG_N}, {NOTE_F5, OG_N}, {NOTE_E5, OG_N}, {NOTE_C5, OG_B}, // Fa La Fa' Mi' Do'
+    {NOTE_A4, OG_C}, {NOTE_G4, OG_C}, {NOTE_A4, OG_C}, {NOTE_C5, OG_C}, {NOTE_A4, OG_C}, {NOTE_G4, OG_B}, // La Sol La Do' La Sol
+    {NOTE_A4, OG_C}, {NOTE_C5, OG_C}, {NOTE_D5, OG_N}, {NOTE_D5, OG_N}, {NOTE_C5, OG_C}, {NOTE_C5, OG_B}, // La Do' Re' Re' Do' Do'
+    {NOTE_A4, OG_C}, {NOTE_C5, OG_C}, {NOTE_D5, OG_N}, {NOTE_AS4, OG_N}, {NOTE_A4, OG_N}, {NOTE_A4, OG_B}, // La Do' Re' Sib La La
+    {REST, OG_N},
+    {NOTE_A4, OG_C}, {NOTE_C5, OG_C}, {NOTE_D5, OG_N}, {NOTE_F5, OG_N}, {NOTE_D5, OG_N}, {NOTE_C5, OG_B}, // La Do' Re' Fa' Re' Do'
+    {NOTE_A4, OG_C}, {NOTE_C5, OG_C}, {NOTE_G4, OG_N}, {NOTE_F4, OG_B}, // La Do' Sol Fa
+    {NOTE_D4, OG_N}, {NOTE_F4, OG_N}, {NOTE_D4, OG_N}, {NOTE_C5, OG_B}, // Re Fa Re Do'
+    {NOTE_A4, OG_C}, {NOTE_C5, OG_C}, {NOTE_G4, OG_N}, {NOTE_F4, OG_N}, {NOTE_D4, OG_B}, // La Do' Sol Fa Re
+    {REST, 0}
 };
 
 char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\nSeleccion: ";
 uint8_t rx_data;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,7 +137,8 @@ static void MX_GPIO_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+void Play_Tone(uint16_t frequency, uint16_t duration);
+void Play_Song(Note song[]);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
