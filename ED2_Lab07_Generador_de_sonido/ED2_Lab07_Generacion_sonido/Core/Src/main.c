@@ -142,6 +142,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  // Enviar el menú a la terminal
+      HAL_UART_Transmit(&huart2, (uint8_t*)msg_menu, strlen(msg_menu), 100);
+
+      // Bloquear hasta recibir un carácter
+      HAL_UART_Receive(&huart2, &rx_data, 1, HAL_MAX_DELAY);
+
+      if (rx_data == '1') {
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Spider-Man...\r\n", 31, 100);
+          HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+          Play_Song(cancion_spiderman);
+          HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+      }
+      else if (rx_data == '2') {
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Oogway Ascends...\r\n", 35, 100);
+          HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+          Play_Song(cancion_oogway);
+          HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+      }
+      else {
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOpcion no valida.\r\n", 21, 100);
+      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
