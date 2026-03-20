@@ -84,6 +84,9 @@ Note cancion_oogway[] = {
     {NOTE_G4, 1200}, {REST, 0}
 };
 
+char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\nSeleccion: ";
+uint8_t rx_data;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
