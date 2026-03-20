@@ -68,6 +68,22 @@ typedef struct
 	uint16_t frecuency;
 	uint16_t duration_ms;
 } Note;
+
+// Cancion 1: Spider-Man (Tema clásico)
+Note cancion_spiderman[] = {
+    {NOTE_C4, 200}, {NOTE_E4, 200}, {NOTE_G4, 400}, {NOTE_C5, 400},
+    {NOTE_AS4, 200}, {NOTE_A4, 200}, {NOTE_G4, 400}, {REST, 100},
+    {NOTE_C4, 200}, {NOTE_E4, 200}, {NOTE_G4, 400}, {NOTE_A4, 400},
+    {NOTE_G4, 400}, {REST, 200}, {REST, 0}
+};
+
+// Cancion 2: Oogway Ascends (Kung Fu Panda)
+Note cancion_oogway[] = {
+    {NOTE_G4, 800}, {NOTE_A4, 400}, {NOTE_C5, 800}, {NOTE_D5, 800},
+    {NOTE_E5, 1200}, {NOTE_D5, 400}, {NOTE_C5, 400}, {NOTE_A4, 800},
+    {NOTE_G4, 1200}, {REST, 0}
+};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
