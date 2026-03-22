@@ -519,6 +519,36 @@ void Play_Song(Note song[]) {
     }
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0); // Apagar al finalizar
 }
+
+void Play_Oogway_DAC(Note *cancion) {
+    for (int i = 0; cancion[i].duracion != 0; i++) {
+        uint32_t frecuencia = cancion[i].frecuencia;
+        uint32_t duracion = cancion[i].duracion;
+
+        if (frecuencia == REST) {
+            HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 0);
+            HAL_Delay(duracion);
+        } else {
+            // Cálculo del delay para la frecuencia (Software Synthesis)
+            // Periodo_us = 1,000,000 / Frecuencia
+            // Delay_entre_muestras = Periodo_us / 32 muestras
+            uint32_t delay_us = (1000000 / (frecuencia * 32));
+            uint32_t start_tick = HAL_GetTick();
+
+            while ((HAL_GetTick() - start_tick) < duracion) {
+                for (int j = 0; j < 32; j++) {
+                    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, sine_table[j]);
+
+                    // Pequeño delay de ajuste para la frecuencia
+                    for (volatile int wait = 0; wait < delay_us; wait++);
+                }
+            }
+        }
+        // Silencio breve entre notas (articulación)
+        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 0);
+        HAL_Delay(20);
+    }
+}
 /* USER CODE END 4 */
 
 /**
