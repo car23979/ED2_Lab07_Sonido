@@ -224,14 +224,10 @@ Note cancion_heidi[] = {
     {REST, 0}
 };
 
-char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\n3. Abuelito Dime Tú (PWM)\r\nSeleccion: ";
-uint8_t rx_data;
+char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\n3. Heidi (PWM)\r\n4. Oogway Ascends (DAC)\r\nSeleccion: ";uint8_t rx_data;
 
 // Tabla senoidal de 8 bits (0-255)
-const uint8_t sine_table[32] = {
-    128, 153, 177, 199, 219, 234, 246, 253, 255, 253, 246, 234, 219, 199, 177, 153,
-    128, 103, 79, 57, 37, 22, 10, 3, 0, 3, 10, 22, 37, 57, 79, 103
-};
+const uint8_t sine_table[8] = {128, 218, 255, 218, 128, 37, 0, 37};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -302,19 +298,19 @@ int main(void)
       HAL_UART_Receive(&huart2, &rx_data, 1, HAL_MAX_DELAY);
 
       if (rx_data == '1') {
-          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Spider-Man...\r\n", 20, 100);
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Spider-Man...\r\n", 29, 100);
           HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
           Play_Song(cancion_spiderman);
           HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
       }
       else if (rx_data == '2') {
-          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Oogway Ascends...\r\n", 17, 100);
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Oogway Ascends...\r\n", 34, 100);
           HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
           Play_Song(cancion_oogway);
           HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
       }
       else if (rx_data == '3') {
-    	  HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Abuelito Dime Tú (Heidy)...\r\n", 16, 100);
+    	  HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Abuelito Dime Tú (Heidy)...\r\n", 44, 100);
     	  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
     	  Play_Song(cancion_heidi);
     	  HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
@@ -326,7 +322,7 @@ int main(void)
     	  HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
       }
       else {
-          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOpcion no valida.\r\n", 13, 100);
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOpcion no valida.\r\n", 18, 100);
       }
     /* USER CODE END WHILE */
 
@@ -501,7 +497,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 83;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 124;
+  htim6.Init.Period = 100;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -628,31 +624,44 @@ void Play_Song(Note song[]) {
         Play_Tone(song[i].frequency, song[i].duration_ms);
         i++;
     }
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0); // Apagar al finalizar
 }
 
 void Play_Oogway_DAC(Note *cancion) {
+    // 1. Iniciamos el DAC con DMA una sola vez
+    // Esto vincula tu sine_table con el periférico DAC
+    HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)sine_table, 32, DAC_ALIGN_8B_R);
+
     for (int i = 0; cancion[i].duration_ms != 0; i++) {
         uint32_t freq = cancion[i].frequency;
         uint32_t dur = cancion[i].duration_ms;
 
         if (freq == REST) {
-            HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 0);
-            HAL_Delay(dur);
+            // Para silencios, bajamos el volumen (frecuencia muy baja o parar timer)
+            HAL_TIM_Base_Stop(&htim6);
         } else {
-            uint32_t delay_us = (1000000 / (freq * 32));
-            uint32_t start_tick = HAL_GetTick();
+            /* 2. CÁLCULO DEL ARR PARA EL TIMER 6
+               Frecuencia de muestreo = Frecuencia_Nota * 32 muestras
+               ARR = (Reloj_Timer / Freq_Muestreo) - 1
+               Reloj_Timer = 1,000,000 (por el prescaler 83)
+            */
+            uint32_t sampling_freq = freq * 32;
+            uint32_t arr_value = (1000000 / sampling_freq) - 1;
 
-            while ((HAL_GetTick() - start_tick) < dur) {
-                for (int j = 0; j < 32; j++) {
-                    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, sine_table[j]);
-                    for (volatile int wait = 0; wait < delay_us; wait++);
-                }
-            }
+            __HAL_TIM_SET_AUTORELOAD(&htim6, arr_value);
+            __HAL_TIM_SET_COUNTER(&htim6, 0); // Reiniciar conteo
+            HAL_TIM_Base_Start(&htim6);       // Arrancar el metrónomo
         }
-        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 0);
+
+        HAL_Delay(dur);
+
+        // Silencio breve (articulación)
+        HAL_TIM_Base_Stop(&htim6);
+        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 128); // Punto medio (silencio analógico)
         HAL_Delay(20);
     }
+
+    // 3. Al terminar la canción, apagamos todo
+    HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
 }
 /* USER CODE END 4 */
 
