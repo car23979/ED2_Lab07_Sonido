@@ -222,6 +222,12 @@ Note cancion_heidi[] = {
 
 char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\n3. Abuelito Dime Tú (PWM)\r\nSeleccion: ";
 uint8_t rx_data;
+
+// Tabla senoidal de 8 bits (0-255)
+const uint8_t sine_table[32] = {
+    128, 153, 177, 199, 219, 234, 246, 253, 255, 253, 246, 234, 219, 199, 177, 153,
+    128, 103, 79, 57, 37, 22, 10, 3, 0, 3, 10, 22, 37, 57, 79, 103
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
