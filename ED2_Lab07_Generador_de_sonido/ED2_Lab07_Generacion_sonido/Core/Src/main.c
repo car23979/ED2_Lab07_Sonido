@@ -55,6 +55,7 @@ UART_HandleTypeDef huart2;
 #define NOTE_E4  330
 #define NOTE_F4  349
 #define NOTE_G4  392
+#define NOTE_G4S 415 // Sol#
 #define NOTE_A4  440
 #define NOTE_AS4 466 // Sib
 #define NOTE_B4  494
@@ -63,19 +64,36 @@ UART_HandleTypeDef huart2;
 #define NOTE_E5  659
 #define NOTE_F5  698
 #define NOTE_G5  784
+#define NOTE_A5  880
+#define NOTE_B5  988
+#define NOTE_C6  1047
 #define REST     0
 
 // Definición de tiempos para controlar la velocidad (ms)
-// Para Spider-Man (Moderado)
-#define SP_S 125  // Semicorchea (Muy rápida)
-#define SP_C 250  // Corchea (Rápida)
-#define SP_N 500  // Negra (Normal)
-#define SP_B 1000 // Blanca (Lenta/Pausa)
+// Tiempos específicos para el estilo "Opening" (Tempo: 110 BPM)
+#define SP_L   700   // Larga (para el inicio lento)
+#define SP_N   450   // Negra (velocidad normal del resto)
+#define SP_C   225   // Corchea
+#define SP_S   112   // Semicorchea
+#define SIL    150   // Silencio de articulación
+
+// Silencios para separar frases
+#define SIL_C 273   // Silencio de corchea
+#define SIL_N 545   // Silencio de negra
 
 // Para Oogway (Lento/Solemne)
 #define OG_N 800   // Negra
 #define OG_C 400   // Corchea
 #define OG_B 1600  // Blanca
+
+// Tiempos para Heidi (Tempo 110 BPM)
+#define H_S   136  // Semicorchea
+#define H_C   273  // Corchea
+#define H_CP  409  // Corchea con puntillo (1.5 * Corchea)
+#define H_N   545  // Negra
+#define H_B   1090 // Blanca
+#define H_BP  1635 // Blanca con puntillo (1.5 * Blanca)
+#define H_R   2180 // Redonda
 
 typedef struct {
     uint16_t frequency;
@@ -85,26 +103,37 @@ typedef struct {
 // Cancion 1: Spider-Man (Ajustada al tutorial)
 // Estructura de la canción mejorada
 Note cancion_spiderman[] = {
-    // Frase 1: MI SOL SI (Rápido al inicio)
-    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N},
-    // Frase 2: LA SOL MI MI (Ritmo picado)
-    {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_E4, SP_C}, {NOTE_E4, SP_N},
+    // --- INICIO LENTO Y SOLEMNE ---
+    // MI SOL SI (Notas largas y separadas)
+    {NOTE_E4, SP_L}, {REST, SIL}, {NOTE_G4, SP_L}, {REST, SIL}, {NOTE_B4, 1000}, {REST, 500},
 
-    // Frase 3: MI SOL SI LA SOL MI (Semicorcheas en el medio)
-    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_C}, {NOTE_E4, SP_N},
+    // LA SOL MI MI (Acento en el último MI)
+    {NOTE_A4, SP_N}, {NOTE_G4, SP_C}, {NOTE_E4, SP_N}, {NOTE_E5, SP_L}, {REST, 500},
 
-    // Frase 4: MI SOL SI (Repetición con énfasis)
-    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N},
+    // --- ENTRA EL RITMO CONSTANTE (Más rápido) ---
+    // MI SOL SI LA SOL MI (Fluido)
+    {NOTE_E4, SP_N}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N}, {NOTE_A4, SP_C}, {NOTE_G4, SP_C}, {NOTE_E4, SP_N}, {REST, SIL},
 
-    // Frase 5: DO' SI LA SOL MI (Descenso rápido)
-    {NOTE_C5, SP_S}, {NOTE_B4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_E4, SP_B},
+    // MI SOL SI (Marcado)
+    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N}, {REST, SIL},
 
-    // Frase 6: LA DO' MI RE DO LA (Subida de energía)
-    {NOTE_A4, SP_C}, {NOTE_C5, SP_C}, {NOTE_E5, SP_N}, {NOTE_D5, SP_S}, {NOTE_C5, SP_S}, {NOTE_A4, SP_B},
+    // DO` SI LA SOL MI (Descenso rápido)
+    {NOTE_C5, SP_S}, {NOTE_B4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_E4, SP_C}, {REST, SIL},
 
-    // Frase 7: Final clásico
-    {NOTE_C5, SP_C}, {NOTE_B4, SP_B},
-    {NOTE_A4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_S}, {NOTE_A4, SP_S}, {NOTE_G4, SP_C}, {NOTE_E4, SP_B},
+    // LA DO` MI` RE` DO` LA (Clímax - notas muy picadas)
+    {NOTE_A4, SP_C}, {NOTE_C5, SP_C}, {NOTE_E5, SP_N}, {NOTE_D5, SP_S}, {NOTE_C5, SP_S}, {NOTE_A4, SP_C}, {REST, SIL},
+
+    // MI SOL SI (Retorno)
+    {NOTE_E4, SP_C}, {NOTE_G4, SP_C}, {NOTE_B4, SP_N}, {REST, SIL},
+
+    // DO` SI LA SOL MI (Velocidad normal)
+    {NOTE_C5, SP_C}, {NOTE_B4, SP_C}, {NOTE_A4, SP_C}, {NOTE_G4, SP_C}, {NOTE_E4, SP_N}, {REST, SIL},
+
+    // DO` SI (Final dramático)
+    {NOTE_C5, SP_N}, {NOTE_B4, 1200}, {REST, 300},
+
+    // LA LA SOL LA SOL MI
+    {NOTE_A4, SP_C}, {NOTE_A4, SP_C}, {NOTE_G4, SP_C}, {NOTE_A4, SP_C}, {NOTE_G4, SP_C}, {NOTE_E4, 1500},
 
     {REST, 0}
 };
@@ -127,7 +156,71 @@ Note cancion_oogway[] = {
     {REST, 0}
 };
 
-char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\nSeleccion: ";
+// Cancion 3: Abulito dime tu (Heidy)
+Note cancion_heidi[] = {
+    {NOTE_E4, H_S}, {NOTE_F4, H_S},                         // MI FA (semi corcheas)
+    {NOTE_G4, H_C}, {NOTE_G4, H_C}, {NOTE_G4, H_C}, {NOTE_E5, H_C}, // SOL SOL SOL MI' (Corcheas)
+    {NOTE_C5, H_N}, {REST, H_C},                            // DO' (negra) + silencio corchea
+
+    {NOTE_E4, H_S}, {NOTE_F4, H_S},                         // MI FA (semicorcheas)
+    {NOTE_G4, H_C}, {NOTE_G4, H_C},                         // SOL SOL (Corchas)
+    {NOTE_G4, H_CP}, {NOTE_G4, H_S},                        // SOL con puntillo, Sol semicorchea
+    {NOTE_A4, H_C}, {NOTE_G4, H_C}, {NOTE_F4, H_C},         // LA SOL FA (corchea)
+
+    {NOTE_D4, H_S}, {NOTE_E4, H_S},                         // RE MI (Semicorchea)
+    {NOTE_F4, H_C}, {NOTE_F4, H_C}, {NOTE_F4, H_C}, {NOTE_D5, H_C}, // FA FA FA RE' (corchea)
+    {NOTE_B4, H_N}, {REST, H_C},                            // Si (negra) + silencio corchea
+
+    {NOTE_A4, H_C}, {NOTE_G4, H_N},                         // La (corchea), Sol negra
+    {NOTE_G4, H_C}, {NOTE_D5, H_C}, {NOTE_E5, H_C}, {NOTE_D5, H_C}, // SOL RE' MI' RE' (corchea)
+    {NOTE_C5, H_N},                                         // Do' negra
+
+    {NOTE_F5, H_S}, {NOTE_F5, H_N},                         // Fa' (semicorchea), FA' Negra
+    {NOTE_F5, H_S}, {NOTE_F5, H_N},                         // Fa' (semicorchea), FA' Negra
+    {NOTE_A4, H_C}, {NOTE_A4, H_C}, {NOTE_E5, H_N},         // La La (corchea), MI' negra
+    {NOTE_E5, H_C}, {NOTE_E5, (H_C + H_B)},                 // MI' corchea, MI' (corchea + blanca)
+
+    {NOTE_D5, H_C}, {NOTE_D5, H_N},                         // RE' (corchea), RE' negra
+    {NOTE_D5, H_C}, {NOTE_D5, H_N},                         // RE' (corchea), RE' negra
+    {NOTE_D5, H_C}, {NOTE_F5, H_C}, {NOTE_E5, H_N},         // RE' FA' (corchea), MI' Negra
+    {NOTE_D5, H_S}, {NOTE_C5, (H_S + H_N)},                 // RE' (semicorchea) DO' (semicorchea + negra)
+
+    {NOTE_C5, H_S}, {NOTE_C5, H_S},                         // DO' DO' (Semicorchea)
+    {NOTE_F5, H_S}, {NOTE_F5, (H_S + H_BP)},                // FA' (Semicorchea) FA' (semicorchea + blanca con puntillo)
+    {REST, H_N},                                            // silencio de negra
+
+    {NOTE_A4, H_N}, {NOTE_C5, H_N}, {NOTE_F5, H_N}, {NOTE_E5, H_N},
+    {NOTE_E5, H_N}, {NOTE_D5, H_N}, {NOTE_D5, H_N},         // La do FA' MI' MI' RE' RE' (negra)
+    {NOTE_C5, H_B}, {REST, H_N},                            // Do' blanca, silencio de negra
+
+    // Sección de estribillo con alteraciones
+    {NOTE_G4, H_CP}, {NOTE_G4S, H_S},                       // Sol (corchea con puntillo), Sol# (semicorechea)
+    {NOTE_A4, H_C}, {NOTE_F5, H_C}, {NOTE_A4, H_C}, {NOTE_F5, H_C}, // LA FA' LA FA' (Corchea)
+    {NOTE_A4, H_N},                                         // La negra
+
+    {NOTE_A4, H_CP}, {NOTE_G4S, H_S},                       // La (corchea con puntillo), Sol# (semicorechea)
+    {NOTE_G4, H_S}, {NOTE_E5, H_S}, {NOTE_G4, H_S}, {NOTE_E5, H_S}, // SOL MI' SOL MI' (semicorchea)
+    {NOTE_G4, H_N},                                         // sol negra
+
+    {NOTE_G4, H_CP}, {NOTE_G4S, H_S},                       // Sol (corchea con puntillo), Sol# (semicorechea)
+    {NOTE_F4, H_N}, {NOTE_D5, H_N}, {NOTE_C5, H_N}, {NOTE_B4, H_N},
+    {NOTE_C5, H_N}, {NOTE_D5, H_N}, {NOTE_E5, H_N},         // FA RE' DO' SI DO' RE' MI' (negra)
+
+    {NOTE_G4, H_CP}, {NOTE_G4S, H_S},                       // Sol (corchea con puntillo), Sol# (semicorechea)
+    {NOTE_A4, H_S}, {NOTE_F5, H_S}, {NOTE_A4, H_S}, {NOTE_F5, H_S}, // LA FA' LA FA' (Semicorchea)
+    {NOTE_A4, H_N},                                         // La negra
+
+    {NOTE_A4, H_CP}, {NOTE_G4S, H_S},                       // La (corchea con puntillo), Sol# (semicorechea)
+    {NOTE_G4, H_S}, {NOTE_E5, H_S}, {NOTE_G4, H_S}, {NOTE_E5, H_S}, // SOL MI ' SOL MI' (semicorchea)
+    {NOTE_G4, H_N},                                         // sol negra
+
+    {NOTE_G4, H_CP}, {NOTE_G4S, H_S},                       // Sol (corchea con puntillo), Sol# (semicorechea)
+    {NOTE_F4, H_N}, {NOTE_D5, H_N}, {NOTE_C5, H_N}, {NOTE_B4, H_N}, // Fa RE' DO' SI (negra)
+    {NOTE_C5, H_R},                                         // Do' (redonda)
+    {REST, 0}
+};
+
+char msg_menu[] = "\r\n--- Reproductor UVG ---\r\n1. Spider-Man (PWM)\r\n2. Oogway Ascends (PWM)\r\n3. Abuelito Dime Tú (PWM)\r\nSeleccion: ";
 uint8_t rx_data;
 /* USER CODE END PV */
 
@@ -202,6 +295,12 @@ int main(void)
           HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
           Play_Song(cancion_oogway);
           HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+      }
+      else if (rx_data == '3') {
+    	  HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Abuelito Dime Tú (Heidy)...\r\n", 35, 100);
+    	  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    	  Play_Song(cancion_heidi);
+    	  HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
       }
       else {
           HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOpcion no valida.\r\n", 21, 100);
