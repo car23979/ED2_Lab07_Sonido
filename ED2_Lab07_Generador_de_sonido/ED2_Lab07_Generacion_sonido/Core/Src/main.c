@@ -302,25 +302,31 @@ int main(void)
       HAL_UART_Receive(&huart2, &rx_data, 1, HAL_MAX_DELAY);
 
       if (rx_data == '1') {
-          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Spider-Man...\r\n", 31, 100);
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Spider-Man...\r\n", 20, 100);
           HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
           Play_Song(cancion_spiderman);
           HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
       }
       else if (rx_data == '2') {
-          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Oogway Ascends...\r\n", 35, 100);
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Oogway Ascends...\r\n", 17, 100);
           HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
           Play_Song(cancion_oogway);
           HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
       }
       else if (rx_data == '3') {
-    	  HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Abuelito Dime Tú (Heidy)...\r\n", 35, 100);
+    	  HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nReproduciendo Abuelito Dime Tú (Heidy)...\r\n", 16, 100);
     	  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
     	  Play_Song(cancion_heidi);
     	  HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
       }
+      else if (rx_data == '4') {
+    	  HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOogway DAC (Seno)...\r\n", 24, 100);
+    	  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+    	  Play_Oogway_DAC(cancion_oogway);
+    	  HAL_DAC_Stop(&hdac, DAC_CHANNEL_1);
+      }
       else {
-          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOpcion no valida.\r\n", 21, 100);
+          HAL_UART_Transmit(&huart2, (uint8_t*)"\r\nOpcion no valida.\r\n", 13, 100);
       }
     /* USER CODE END WHILE */
 
