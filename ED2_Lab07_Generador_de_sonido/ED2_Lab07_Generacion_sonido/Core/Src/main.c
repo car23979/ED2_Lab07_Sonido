@@ -632,30 +632,24 @@ void Play_Song(Note song[]) {
 }
 
 void Play_Oogway_DAC(Note *cancion) {
-    for (int i = 0; cancion[i].duracion != 0; i++) {
-        uint32_t frecuencia = cancion[i].frecuencia;
-        uint32_t duracion = cancion[i].duracion;
+    for (int i = 0; cancion[i].duration_ms != 0; i++) {
+        uint32_t freq = cancion[i].frequency;
+        uint32_t dur = cancion[i].duration_ms;
 
-        if (frecuencia == REST) {
+        if (freq == REST) {
             HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 0);
-            HAL_Delay(duracion);
+            HAL_Delay(dur);
         } else {
-            // Cálculo del delay para la frecuencia (Software Synthesis)
-            // Periodo_us = 1,000,000 / Frecuencia
-            // Delay_entre_muestras = Periodo_us / 32 muestras
-            uint32_t delay_us = (1000000 / (frecuencia * 32));
+            uint32_t delay_us = (1000000 / (freq * 32));
             uint32_t start_tick = HAL_GetTick();
 
-            while ((HAL_GetTick() - start_tick) < duracion) {
+            while ((HAL_GetTick() - start_tick) < dur) {
                 for (int j = 0; j < 32; j++) {
                     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, sine_table[j]);
-
-                    // Pequeño delay de ajuste para la frecuencia
                     for (volatile int wait = 0; wait < delay_us; wait++);
                 }
             }
         }
-        // Silencio breve entre notas (articulación)
         HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, 0);
         HAL_Delay(20);
     }
